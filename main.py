@@ -26,4 +26,5 @@ def main():
     elif args.live:
         cap_pkt(interface=args.interface, output_path=args.output, packet_limit=args.count))
 
-if __name__ = "__main__":
+if __name__ == "__main__":
+    main()
