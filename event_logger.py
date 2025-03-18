@@ -2,7 +2,7 @@ import logging
 
 def logger_setup():
     logging.basicConfig(
-        filename=ids.log,
+        filename="ids.log",
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s"
     )
