@@ -3,6 +3,7 @@ from scapy import *
 import pyshark
 import os
 from event_logger import logger_setup, log_event
+from manage_list import *
 
 logger_setup()
 
@@ -56,22 +57,29 @@ def dos_detector(packets, file_path, time_window=5, max_value=100):
             log_event("info", f"No DoS Attack Detected")
 
 def filter_ip(pkt, blocklist=None, allowlist=None):
-    if hasattr(pkt, 'ip'):
-        src_ip = pkt.ip.src
-        if blocklist and src_ip in blocklist:
-            print(f"{src_ip} is in the Blocklist.")
-            log_event("warning", f"Blocked IP : {src_ip} detected.")
-            return None
-        if allowlist and src_ip not in allowlist:
-            print(f"{src_ip} is not in the Allowlist.")
-            log_event("warning", f"IP : {src_ip} not found in the Allowlist.")
-            return None
-        
-        return pkt
+    if blocklist or allowlist:
+        manage_filter("load", blocklist if blocklist else allowlist)
+
+        if hasattr(pkt, 'ip'):
+            src_ip = pkt.ip.src
+            if blocklist and src_ip in manage_filter.ip_list:
+                print(f"{src_ip} is in the Blocklist.")
+                log_event("warning", f"Blocked IP : {src_ip} detected.")
+                return None
+            if allowlist and src_ip not in manage_filter.ip_list:
+                print(f"{src_ip} is not in the Allowlist.")
+                log_event("warning", f"IP : {src_ip} not found in the Allowlist.")
+                return None
+            
+            return pkt
 
 
-def analyze_file(file_path):
+def analyze_file(file_path, blocklist=None, allowlist=None):
     packets = rdpcap(file_path)
-    portscan_detector(packets, file_path)
-    dos_detector(packets, file_path)
-
+    if blocklist or allowlist:
+        filter_ip(packets, blocklist, allowlist)
+        portscan_detector(packets, file_path)
+        dos_detector(packets, file_path)
+    else:
+        portscan_detector(packets, file_path)
+        dos_detector(packets, file_path)
