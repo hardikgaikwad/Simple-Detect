@@ -36,6 +36,6 @@ def manage_filter(action, ip=None, list_type="blocklist"):
     elif action == "load":
         return ip_list
     
-    with open(file_path, "w") as f:
+    with open(list_path, "w") as f:
         for ip in sorted(ip_list):
             f.write(ip + "\n")
