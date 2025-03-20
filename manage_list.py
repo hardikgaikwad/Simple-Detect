@@ -21,7 +21,7 @@ def manage_filter(action, ip=None, list_type="blocklist"):
             pass
     
     with open(list_path, 'r') as f:
-        ip_list = set(line.strip() for line in f in line.strip())
+        ip_list = set(line.strip() for line in f)
 
     if action == 'add' and ip:
         ip_list.add(ip)
