@@ -9,10 +9,10 @@ def logger_setup():
 
 def log_event(level, message):
     if level == "info":
-        logging.INFO(message)
+        logging.info(message)
     elif level == "warning":
-        logging.WARNING(message)
+        logging.info(message)
     elif level == "error":
-        logging.ERROR(message)
+        logging.error(message)
     else:
-        logging.ERROR("logging error.")
+        logging.error("logging error.")
