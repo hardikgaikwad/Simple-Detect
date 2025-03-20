@@ -26,8 +26,7 @@ def portscan_detector(packets, file_path, max_value = 10):
             print(f"PORT SCAN DETECTED! Possible port scan detected from {ip}, alert emailed.")
             #add to logs
             log_event("warning", f"Port Scan detected from {ip}.")
-            #send email
-            #ask for pretty table
+        
         else:
             print(f"No Port Scan detected.")
             log_event("info", f"No Port Scan Detected")
@@ -50,32 +49,35 @@ def dos_detector(packets, file_path, time_window=5, max_value=100):
             print(f"DOS ATTACK DETECTED! Possible DoS Attack detected from {ip}, alert emailed.")
             #add to logs
             log_event("warning", f"Possible DoS Attack detected from {ip}.")
-            #send email
-            #ask for pretty table
+        
         else:
             print(f"No DoS Attack detected.")
             log_event("info", f"No DoS Attack Detected")
 
 def filter_ip(pkt, blocklist=None, allowlist=None):
-    if blocklist or allowlist:
-        manage_filter("load", blocklist if blocklist else allowlist)
+    ip_list = manage_filter("load", list_type="blocklist" if blocklist else "allowlist")
 
-        if hasattr(pkt, 'ip'):
-            src_ip = pkt.ip.src
-            if blocklist and src_ip in manage_filter.ip_list:
-                print(f"{src_ip} is in the Blocklist.")
-                log_event("warning", f"Blocked IP : {src_ip} detected.")
-                return None
-            if allowlist and src_ip not in manage_filter.ip_list:
-                print(f"{src_ip} is not in the Allowlist.")
-                log_event("warning", f"IP : {src_ip} not found in the Allowlist.")
-                return None
+    if ip_list is None:
+        ip_list = set()
+
+    if hasattr(pkt, 'ip'):
+        src_ip = pkt.ip.src
+
+        if blocklist and src_ip in ip_list:
+            print(f"{src_ip} is in the Blocklist.")
+            log_event("warning", f"Blocked IP : {src_ip} detected.")
+            return None
+        
+        if allowlist and src_ip not in ip_list:
+            print(f"{src_ip} is not in the Allowlist.")
+            log_event("warning", f"IP : {src_ip} not found in the Allowlist.")
+            return None
             
-            return pkt
+    return pkt
 
 
 def analyze_file(file_path, blocklist=None, allowlist=None):
-    packets = rdpcap(file_path)
+    packets = scapy.rdpcap(file_path)
     if blocklist or allowlist:
         filter_ip(packets, blocklist, allowlist)
         portscan_detector(packets, file_path)
